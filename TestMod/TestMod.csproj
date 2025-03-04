@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Alarm\Alarm.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Resource Include="resources\alarm_mod.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="alarm_mod.json" />
+      <EmbeddedResource Include="alarm_mod.json" />
+    </ItemGroup>
+
+</Project>
