@@ -11,14 +11,17 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Resource Include="resources\alarm_mod.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Resource>
+      <None Remove="alarm_mod.json" />
+      <EmbeddedResource Include="alarm_mod.json" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="alarm_mod.json" />
-      <EmbeddedResource Include="alarm_mod.json" />
+      <Reference Include="Assembly-CSharp">
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\WakeyWakey\Wakey Wakey_Data\Managed\Assembly-CSharp.dll.bak</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.CoreModule">
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\WakeyWakey\Wakey Wakey_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

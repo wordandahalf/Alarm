@@ -2,66 +2,72 @@ using System.Reflection;
 using System.Text.Json;
 using Alarm.Weaving;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Alarm.Mod.Loading;
 
 /// <summary>
 /// Internal container for mod loading logic.
 /// </summary>
-internal static class ModLoader
+internal class ModLoader
 {
     private const string ModExtension = ".dll";
     private const string ModConfigName = "alarm_mod.json";
     private const string GameAssembly = "/Managed/Assembly-CSharp.dll";
     
-    public static void Initialize(DirectoryInfo gameDirectory)
+    private readonly List<LoadedMod> _loadedMods = new List<LoadedMod>(); 
+    
+    public LoadedMod[] LoadedMods => _loadedMods.ToArray();
+    
+    public void LoadDirectory(DirectoryInfo modDirectory)
+    {
+        _loadedMods.AddRange(
+            modDirectory.GetFiles()
+                .Where(it => it.Name.EndsWith(ModExtension))
+                .Select(it => {
+                    try { return LoadFile(it); }
+                    catch (ModLoadingException e) {
+                        Console.Error.WriteLine(e.Message);
+                        return null;
+                    }
+                })
+                .Where(it => it != null)
+                .ToArray() as LoadedMod[]
+            );
+    }
+    
+    public void Initialize(DirectoryInfo gameDirectory)
     {
         var gameFile = new FileInfo(gameDirectory.FullName + GameAssembly);
         var backupFile = new FileInfo(gameFile.FullName + ".bak");
 
-        if (gameFile.Exists != backupFile.Exists)
+        if (gameFile.Exists && !backupFile.Exists)
         {
-            if (gameFile.Exists)
-            {
-                File.Move(gameFile.FullName, backupFile.FullName);
-                Console.WriteLine($"Created backup of game library at '{backupFile.FullName}'");
-            }
-            Hook(backupFile);
+            File.Move(gameFile.FullName, backupFile.FullName);
+            Console.WriteLine($"Created backup of game library at '{backupFile.FullName}'");
         }
+        Hook(backupFile);
     }
 
-    private static void Hook(FileInfo gameFile)
+    private void Hook(FileInfo gameFile)
     {
         var assembly = AssemblyDefinition.ReadAssembly(gameFile.FullName).MainModule;
 
-        // Inject.CallAtTail(
-        //     assembly, "InputManager", "UpdateInput",
-        //     typeof(Hooks.Input), "Update"
-        // );
-        
-        // Inject.Overwrite(
-        //     assembly, "ButtonClickNoise", "PlaySoundOnClick",
-        //     typeof(Hooks.UI), "PlaySoundOnClick"
-        // );
+        // todo: error handling
+        foreach (var mod in _loadedMods)
+        {
+            foreach (var weave in mod.Config.Weaves)
+            {
+                Console.WriteLine($"Handling configured weave '{weave}' for mod '{mod.Config.Name}");
+                Weaving.Weaving.HandleClass(
+                    assembly,
+                    AssemblyDefinition.ReadAssembly(mod.Assembly.Location).MainModule, 
+                    mod.Assembly.GetType(weave)!
+                );
+            }
+        }
         
         assembly.Write(gameFile.FullName.Replace(".bak", null));
         Console.WriteLine($"Wrote modified code to '{gameFile.FullName.Replace(".bak", null)}'");
-    }
-    
-    public static LoadedMod[] LoadDirectory(DirectoryInfo modDirectory)
-    {
-        return modDirectory.GetFiles()
-            .Where(it => it.Name.EndsWith(ModExtension))
-            .Select(it => {
-                try { return LoadFile(it); }
-                catch (ModLoadingException e) {
-                    Console.Error.WriteLine(e.Message);
-                    return null;
-                }
-            })
-            .Where(it => it != null)
-            .ToArray() as LoadedMod[];
     }
 
     private static LoadedMod LoadFile(FileInfo modFile)

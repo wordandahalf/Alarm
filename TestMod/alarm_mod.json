@@ -2,5 +2,6 @@
   "Name": "TestMod",
   "Author": "Alarm Authors",
   "Version": "1.0.0",
-  "Entrypoint" : "TestMod.Main"
+  "Entrypoint" : "TestMod.Main",
+  "Weaves": [ "TestMod.Weaves.DisablePauseMenu" ]
 }
