@@ -1,5 +1,8 @@
 using System.Reflection;
 using System.Text.Json;
+using Alarm.Weaving;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Alarm.Mod.Loading;
 
@@ -10,6 +13,41 @@ internal static class ModLoader
 {
     private const string ModExtension = ".dll";
     private const string ModConfigName = "alarm_mod.json";
+    private const string GameAssembly = "/Managed/Assembly-CSharp.dll";
+    
+    public static void Initialize(DirectoryInfo gameDirectory)
+    {
+        var gameFile = new FileInfo(gameDirectory.FullName + GameAssembly);
+        var backupFile = new FileInfo(gameFile.FullName + ".bak");
+
+        if (gameFile.Exists != backupFile.Exists)
+        {
+            if (gameFile.Exists)
+            {
+                File.Move(gameFile.FullName, backupFile.FullName);
+                Console.WriteLine($"Created backup of game library at '{backupFile.FullName}'");
+            }
+            Hook(backupFile);
+        }
+    }
+
+    private static void Hook(FileInfo gameFile)
+    {
+        var assembly = AssemblyDefinition.ReadAssembly(gameFile.FullName).MainModule;
+
+        // Inject.CallAtTail(
+        //     assembly, "InputManager", "UpdateInput",
+        //     typeof(Hooks.Input), "Update"
+        // );
+        
+        // Inject.Overwrite(
+        //     assembly, "ButtonClickNoise", "PlaySoundOnClick",
+        //     typeof(Hooks.UI), "PlaySoundOnClick"
+        // );
+        
+        assembly.Write(gameFile.FullName.Replace(".bak", null));
+        Console.WriteLine($"Wrote modified code to '{gameFile.FullName.Replace(".bak", null)}'");
+    }
     
     public static LoadedMod[] LoadDirectory(DirectoryInfo modDirectory)
     {
@@ -26,7 +64,7 @@ internal static class ModLoader
             .ToArray() as LoadedMod[];
     }
 
-    public static LoadedMod LoadFile(FileInfo modFile)
+    private static LoadedMod LoadFile(FileInfo modFile)
     {
         var mod = Assembly.LoadFile(modFile.FullName);
         var configNames = mod.GetManifestResourceNames().Where(it => it.EndsWith(ModConfigName)).ToArray();
