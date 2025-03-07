@@ -3,7 +3,7 @@ using System.Text.Json;
 using Alarm.Weaving;
 using Mono.Cecil;
 
-namespace Alarm.Mod.Loading;
+namespace Alarm.Mods.Loading;
 
 /// <summary>
 /// Internal container for mod loading logic.
@@ -14,7 +14,7 @@ internal class ModLoader
     private const string ModConfigName = "alarm_mod.json";
     private const string GameAssembly = "/Managed/Assembly-CSharp.dll";
     
-    private readonly List<LoadedMod> _loadedMods = new List<LoadedMod>(); 
+    private readonly List<LoadedMod> _loadedMods = new(); 
     
     public LoadedMod[] LoadedMods => _loadedMods.ToArray();
     
@@ -45,40 +45,36 @@ internal class ModLoader
             File.Move(gameFile.FullName, backupFile.FullName);
             Console.WriteLine($"Created backup of game library at '{backupFile.FullName}'");
         }
-        Hook(backupFile);
+
+        File.Copy(backupFile.FullName, gameFile.FullName, true);
+        Assemblies.LoadGameAssembly(gameFile.FullName);
+        Hook();
+        Assemblies.SaveGameAssembly();
     }
 
-    private void Hook(FileInfo gameFile)
+    private void Hook()
     {
-        var assembly = AssemblyDefinition.ReadAssembly(gameFile.FullName).MainModule;
-
-        // todo: error handling
         foreach (var mod in _loadedMods)
         {
+            var module = mod.Assembly;
             foreach (var weave in mod.Config.Weaves)
             {
-                Console.WriteLine($"Handling configured weave '{weave}' for mod '{mod.Config.Name}");
-                Weaving.Weaving.HandleClass(
-                    assembly,
-                    AssemblyDefinition.ReadAssembly(mod.Assembly.Location).MainModule, 
-                    mod.Assembly.GetType(weave)!
-                );
+                // todo: error checking
+                Weaves.Load(module.GetType(weave)!);
             }
         }
-        
-        assembly.Write(gameFile.FullName.Replace(".bak", null));
-        Console.WriteLine($"Wrote modified code to '{gameFile.FullName.Replace(".bak", null)}'");
+
+        Weaves.Apply();
     }
 
     private static LoadedMod LoadFile(FileInfo modFile)
     {
-        var mod = Assembly.LoadFile(modFile.FullName);
-        var configNames = mod.GetManifestResourceNames().Where(it => it.EndsWith(ModConfigName)).ToArray();
-
-        if (configNames.Length == 0) throw new MissingConfigurationException(modFile);
-        if (configNames.Length > 1) throw new TooManyConfigurationsException(modFile);
+        var mod =
+            modFile.FullName == Assemblies.GetExecutingAssembly().Location ?
+                Assemblies.GetExecutingAssembly() : Assemblies.LoadRuntime(modFile.FullName);
         
-        var configName = configNames[0];
+        var configName = mod.GetManifestResourceNames().FirstOrDefault(it => it.EndsWith(ModConfigName));
+        if (configName == null) throw new MissingConfigurationException(modFile);
         
         using var stream = mod.GetManifestResourceStream(configName) ?? throw new IllegalConfigurationException(modFile);
         var config = JsonSerializer.Deserialize<ModConfiguration>(stream)

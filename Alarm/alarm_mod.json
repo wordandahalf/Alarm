@@ -1,0 +1,7 @@
+﻿{
+  "Name": "Alarm",
+  "Author": "Alarm Authors",
+  "Version": "0.1.0",
+  "Entrypoint" : "Alarm.Mod.Main",
+  "Weaves": [ "Alarm.Mod.Weaves.DisableLeaderboard", "Alarm.Mod.Weaves.AddModWatermark" ]
+}

@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Alarm.Mod.Loading;
+using Alarm.Mods.Loading;
 using Alarm.Weaving;
 
 [DllImport("C:\\Program Files (x86)\\Steam\\steamapps\\common\\WakeyWakey\\UnityPlayer.dll")]

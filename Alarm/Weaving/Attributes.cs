@@ -1,4 +1,7 @@
-﻿using Mono.Cecil;
+﻿using Alarm.Weaving.Transformers;
+using Alarm.Weaving.Transformers.Injection;
+using Alarm.Weaving.Transformers.Reference;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Alarm.Weaving;
@@ -6,16 +9,20 @@ namespace Alarm.Weaving;
 /// <summary>
 /// Decorates a weave class
 /// </summary>
-/// <param name="name">The fully qualified name of the target type</param>
-[AttributeUsage(AttributeTargets.Class)]
-public class Weave(string name) : Attribute
+/// <param name="type">The fully qualified name of the target type</param>
+[AttributeUsage(AttributeTargets.Class, Inherited = false)]
+public class Weave(string type) : Attribute
 {
-    public string Name => name;
+    public readonly string Type = type;
 }
 
-public interface IInjectionMethod
+public abstract class TransformerAttribute(int? priority) : Attribute
 {
-    public void Apply(MethodDefinition weave, MethodDefinition target, MethodReference call);
+    protected TransformerAttribute() : this(null) {}
+
+    public readonly int? Priority = priority < 0 ? null : priority;
+    
+    public abstract void AddTransformers(WeaveTarget source, WeaveTarget target, IMemberDefinition decorated);
 }
 
 /// <summary>
@@ -24,47 +31,67 @@ public interface IInjectionMethod
 /// <param name="at">The location where this method's bytecode is injected</param>
 /// <param name="name">The name of the target method</param>
 [AttributeUsage(AttributeTargets.Method)]
-public class Inject(Inject.Location at, string? name = null) : Attribute, IInjectionMethod
+public class Inject(Inject.Location at, string? name = null, int priority = -1) : TransformerAttribute(priority)
 {
-    public Location At => at;
-    public string? Name => name;
+    public readonly Location At = at;
+    public readonly string? Name = name;
     
     public enum Location
     {
         Head, Tail
     }
-    
-    public void Apply(MethodDefinition weave, MethodDefinition target, MethodReference call)
+
+    public override void AddTransformers(WeaveTarget source, WeaveTarget target, IMemberDefinition decorated)
     {
-        var instr = target.Body.Instructions;
-        var editor = target.Body.GetILProcessor();
+        var sourceMethod = (MethodDefinition) decorated;
+        var targetMethod = target.Definition.Methods.First(x => x.Name == decorated.Name);
         
-        var insertion = at switch
-        {
-            Location.Head => instr.First(),
-            Location.Tail => instr.Reverse().First(it => it.OpCode == OpCodes.Ret),
-            _ => throw new ArgumentException($"unknown location '{at}'")
-        };
-        
-        editor.InsertBefore(insertion, Instruction.Create(OpCodes.Call, call));
+        Console.WriteLine($"Adding Inject to {target.Definition.FullName} for {targetMethod.FullName}");
+        target.AddTransformers(new InjectMethodTransformer(Priority, sourceMethod, targetMethod, At));
     }
 }
 
 /// <summary>
 /// Decorates an overwrite method
 /// </summary>
-/// <param name="name">The name of the target method</param>
 [AttributeUsage(AttributeTargets.Method)]
-public class Overwrite(string? name = null) : Attribute, IInjectionMethod
+public class Overwrite(int priority = -1) : TransformerAttribute(priority)
 {
-    public string? Name => name;
-    
-    public void Apply(MethodDefinition weave, MethodDefinition target, MethodReference call)
+    public override void AddTransformers(WeaveTarget source, WeaveTarget target, IMemberDefinition decorated)
     {
-        var editor = target.Body.GetILProcessor();
+        var sourceMethod = (MethodDefinition) decorated;
+        var targetMethod = target.Definition.Methods.First(x => x.Name == decorated.Name);
         
-        editor.Clear();
-        editor.Append(Instruction.Create(OpCodes.Call, call));
-        editor.Append(Instruction.Create(OpCodes.Ret));
+        Console.WriteLine($"Adding Overwrite to {target.Definition.FullName} for {targetMethod.FullName}");
+        target.AddTransformers(new OverwriteMethodTransformer(Priority, sourceMethod, targetMethod));
+    }
+}
+
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Method)]
+public class Shadow : TransformerAttribute
+{
+    public override void AddTransformers(WeaveTarget source, WeaveTarget target, IMemberDefinition decorated)
+    {
+        MemberReferenceTransformer transformer = decorated switch
+        {
+            MethodDefinition method =>
+                new MethodReferenceTransformer(
+                    source.Definition, Priority,
+                    method.ToMethodReference(),
+                    target.Definition.Methods.First(x => x.Name == method.Name).ToMethodReference()
+                ),
+            FieldDefinition field =>
+                new FieldReferenceTransformer(
+                    source.Definition, Priority,
+                    field.ToFieldReference(),
+                    target.Definition.Fields.First(x => x.Name == field.Name).ToFieldReference()
+                ),
+            _ => throw new NotImplementedException()
+        };
+        
+        Console.WriteLine(
+            $"Adding Shadow to {source.Definition.FullName}, mapping {transformer.OldReference.FullName} to {transformer.NewReference.FullName}"
+        );
+        source.AddTransformers(transformer);
     }
 }

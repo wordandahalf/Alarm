@@ -1,4 +1,4 @@
-namespace Alarm.Mod;
+namespace Alarm.Mods;
 
 /// <summary>
 /// Interface implemented by Alarm mods.

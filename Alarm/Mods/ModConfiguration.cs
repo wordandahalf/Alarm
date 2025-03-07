@@ -1,4 +1,4 @@
-namespace Alarm.Mod;
+namespace Alarm.Mods;
 
 public record ModConfiguration(
     string Name,

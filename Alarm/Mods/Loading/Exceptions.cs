@@ -1,4 +1,4 @@
-namespace Alarm.Mod.Loading;
+namespace Alarm.Mods.Loading;
 
 public class ModLoadingException(FileInfo mod, string? message)
     : Exception($"Could not load mod '{mod.FullName}': {message}");
