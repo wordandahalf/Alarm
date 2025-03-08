@@ -13,7 +13,8 @@ public class MethodReferenceTransformer(
     public override void Apply()
     {
         var decoratedMethods =
-            Target.Methods.Where(it => it.HasCustomAttribute(typeof(TransformerAttribute)));
+            Target.Methods.Where(it => it.HasCustomAttribute(typeof(TransformerAttribute)))
+                .Where(it => !it.IsAbstract);
         
         foreach (var method in decoratedMethods) { Apply(method); }
     }

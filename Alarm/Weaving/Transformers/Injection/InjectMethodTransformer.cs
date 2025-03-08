@@ -8,7 +8,7 @@ public class InjectMethodTransformer(
     int? priority, MethodDefinition source, MethodDefinition target, Inject.Location at
 ) : BinaryMethodTransformer(ApplyPhase.Target, priority, source, target)
 {
-    public Inject.Location At = at;
+    public readonly Inject.Location At = at;
 
     public override void Apply()
     {

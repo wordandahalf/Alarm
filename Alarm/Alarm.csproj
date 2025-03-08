@@ -5,6 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <OutputType>Exe</OutputType>
+        <AssemblyVersion>0.1.0</AssemblyVersion>
+        <FileVersion>0.1.0</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,15 +24,19 @@
     <ItemGroup>
       <Reference Include="Assembly-CSharp">
         <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\WakeyWakey\Wakey Wakey_Data\Managed\Assembly-CSharp.dll</HintPath>
+        <Private>False</Private>
       </Reference>
       <Reference Include="Unity.RenderPipelines.Universal.Runtime">
         <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\WakeyWakey\Wakey Wakey_Data\Managed\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
+        <Private>False</Private>
       </Reference>
       <Reference Include="Unity.TextMeshPro">
         <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\WakeyWakey\Wakey Wakey_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+        <Private>False</Private>
       </Reference>
       <Reference Include="UnityEngine.CoreModule">
         <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\WakeyWakey\Wakey Wakey_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+        <Private>False</Private>
       </Reference>
     </ItemGroup>
 

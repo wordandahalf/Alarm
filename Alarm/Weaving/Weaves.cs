@@ -44,7 +44,11 @@ public static class Weaves
     {
         foreach (var attr in info.GetCustomAttributes<TransformerAttribute>())
         {
-            attr.AddTransformers(source, target, source.Definition.GetMethod(info)!);
+            attr.AddTransformers(
+                source, target, 
+                source.Definition.GetMethod(info)
+                    ?? throw new InvalidOperationException($"Could not find method decorated method '{info}' in type '{source.Definition.FullName}'")
+            );
         }
     }
 
@@ -52,7 +56,11 @@ public static class Weaves
     {
         foreach (var attr in info.GetCustomAttributes<TransformerAttribute>())
         {
-            attr.AddTransformers(source, target, source.Definition.GetField(info)!);
+            attr.AddTransformers(
+                source, target, 
+                source.Definition.GetField(info)
+                    ?? throw new InvalidOperationException($"Could not find method decorated field '{info}' in type '{source.Definition.FullName}'")
+            );
         }
     }
 

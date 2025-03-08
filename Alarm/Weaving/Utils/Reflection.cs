@@ -80,7 +80,7 @@ public static class Reflection
     {
         foreach (var field in type.Fields)
         {
-            if (field.Name == fieldInfo.Name && field.FieldType.FullName == fieldInfo.FieldType.FullName)
+            if (field.Name == fieldInfo.Name && field.FieldType.Name == fieldInfo.FieldType.Name)
             {
                 return field;
             }
@@ -92,6 +92,6 @@ public static class Reflection
     public static bool HasCustomAttribute(this MethodDefinition method, Type attributeType)
     {
         return method.CustomAttributes
-            .Any(it => it.AttributeType.Resolve().BaseType.FullName == attributeType.FullName);
+            .Any(it => it.AttributeType.Resolve()?.BaseType?.FullName == attributeType.FullName);
     }
 }

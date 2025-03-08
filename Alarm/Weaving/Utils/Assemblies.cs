@@ -19,7 +19,6 @@ internal static class Assemblies
 
     public static void LoadGameAssembly(string fileName)
     {
-        // todo: Resolver.AddSearchDirectory();
         if (_gameAssembly != null) throw new InvalidOperationException();
         _gameAssembly = Load(fileName, readWrite: true);
     }
@@ -44,5 +43,22 @@ internal static class Assemblies
     public static Assembly LoadRuntime(string fileName)
     {
         return Assembly.LoadFile(fileName);
+    }
+
+    public static void AddSearchDirectory(string directory)
+    {
+        Resolver.AddSearchDirectory(directory);
+    }
+
+    internal static Assembly? Resolve(object? sender, ResolveEventArgs args)
+    {
+        var name = new AssemblyName(args.Name).Name + ".dll";
+        var location = Resolver.GetSearchDirectories()
+            .Select(directory => new FileInfo(directory + "/" + name))
+            .FirstOrDefault(it => it.Exists);
+
+        if (location is null) return null;
+        Console.WriteLine($"Loading assembly '{name}' from '{location.FullName}'...");
+        return LoadRuntime(location.FullName);
     }
 }

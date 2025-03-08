@@ -71,6 +71,8 @@ public static class Bytecode
         
         return instruction.GetLocalVarOp() switch
         {
+            // we could be lazy and simply use Ldloc_S/Stloc_S,
+            // but could lead to performance degradation if modyfing a hotpath
             LocalVarOp.Load => instruction.OffsetLoadLocal(method, offset),
             LocalVarOp.Store => instruction.OffsetStoreLocal(method, offset),
             _ => instruction

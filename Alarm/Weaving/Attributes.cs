@@ -85,7 +85,7 @@ public class Shadow : TransformerAttribute
                     field.ToFieldReference(),
                     target.Definition.Fields.First(x => x.Name == field.Name).ToFieldReference()
                 ),
-            _ => throw new NotImplementedException()
+            _ => throw new NotImplementedException($"Cannot handle member '{decorated.FullName}' ({decorated.GetType().Name}) decorated with Shadow attribute")
         };
         
         source.AddTransformers(transformer);

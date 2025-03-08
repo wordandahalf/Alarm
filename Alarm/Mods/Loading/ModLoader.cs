@@ -14,8 +14,9 @@ internal class ModLoader
     private const string ModExtension = ".dll";
     private const string ModConfigName = "alarm_mod.json";
     private const string GameAssembly = "/Managed/Assembly-CSharp.dll";
+    private readonly FileInfo _originalGameAssembly = new("./Assembly-CSharp.dll");
     
-    private readonly List<LoadedMod> _loadedMods = new(); 
+    private readonly List<LoadedMod> _loadedMods = []; 
     
     public LoadedMod[] LoadedMods => _loadedMods.ToArray();
     
@@ -38,16 +39,17 @@ internal class ModLoader
     
     public void Initialize(DirectoryInfo gameDirectory)
     {
+        AppDomain.CurrentDomain.AssemblyResolve += Assemblies.Resolve;
+        
         var gameFile = new FileInfo(gameDirectory.FullName + GameAssembly);
-        var backupFile = new FileInfo(gameFile.FullName + ".bak");
 
-        if (gameFile.Exists && !backupFile.Exists)
+        if (gameFile.Exists && !_originalGameAssembly.Exists)
         {
-            File.Move(gameFile.FullName, backupFile.FullName);
-            Console.WriteLine($"Created backup of game library at '{backupFile.FullName}'");
+            File.Move(gameFile.FullName, _originalGameAssembly.FullName);
+            Console.WriteLine($"Created backup of game library at '{_originalGameAssembly.FullName}'");
         }
 
-        File.Copy(backupFile.FullName, gameFile.FullName, true);
+        File.Copy(_originalGameAssembly.FullName, gameFile.FullName, true);
         Assemblies.LoadGameAssembly(gameFile.FullName);
         
         foreach (var (config, _, assembly) in _loadedMods)
