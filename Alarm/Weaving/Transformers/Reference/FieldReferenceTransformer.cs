@@ -1,4 +1,5 @@
 ﻿using Alarm.Weaving.Utils;
+using API.Weaves;
 using Mono.Cecil;
 
 namespace Alarm.Weaving.Transformers.Reference;
@@ -13,7 +14,8 @@ public class FieldReferenceTransformer(
     public override void Apply()
     {
         var decoratedMethods =
-            Target.Methods.Where(it => it.HasCustomAttribute(typeof(TransformerAttribute)));
+            Target.Methods.Where(it => it.HasCustomAttribute(typeof(TransformerAttribute)))
+                .Where(it => !it.IsAbstract);
         
         foreach (var method in decoratedMethods) { Apply(method); }
     }

@@ -1,4 +1,5 @@
 ﻿using Alarm.Weaving.Utils;
+using API.Weaves;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -25,7 +26,7 @@ public class InjectMethodTransformer(
         var sourceVariables = SourceMethod.Body.Variables;
 
         foreach (var v in sourceVariables)
-            targetVariables.Add(new VariableDefinition(TargetMethod.Module.ImportReference(v.VariableType)));
+            targetVariables.Add(v.UpdateReference(TargetMethod));
         
         foreach (var i in SourceMethod.Body.Instructions)
         {

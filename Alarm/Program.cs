@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Alarm.Mods.Loading;
-using Alarm.Weaving;
 using Alarm.Weaving.Utils;
 
 [DllImport(@"C:\Program Files (x86)\Steam\steamapps\common\WakeyWakey\UnityPlayer.dll")]
@@ -11,7 +10,10 @@ Assemblies.AddSearchDirectory(@"C:\Program Files (x86)\Steam\steamapps\common\Wa
 var loader = new ModLoader();
 
 loader.LoadDirectory(new DirectoryInfo(Directory.GetCurrentDirectory()));
-loader.Initialize(new DirectoryInfo("C:\\Program Files (x86)\\Steam\\steamapps\\common\\WakeyWakey\\Wakey Wakey_Data"));
+loader.Initialize(new DirectoryInfo(@"C:\Program Files (x86)\Steam\steamapps\common\WakeyWakey\Wakey Wakey_Data"));
+
+var references = Assemblies.GetGameAssembly().MainModule.AssemblyReferences;
+Console.WriteLine($"Game assembly has following references: {string.Join(", ", references.Select(it => it.FullName).ToArray())}");
 
 var mods = loader.LoadedMods;
 Console.WriteLine($"Loaded {mods.Length} mods: {string.Join(", ", mods.Select(it => $"{it.Config.Name} v{it.Config.Version}"))}");

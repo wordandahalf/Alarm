@@ -50,6 +50,11 @@ public static class Bytecode
         };
     }
 
+    public static VariableDefinition UpdateReference(this VariableDefinition definition, MethodDefinition target)
+    {
+        return new VariableDefinition(target.Module.ImportReference(definition.VariableType));
+    }
+
     public static Instruction UpdateReference(this Instruction instruction, MethodDefinition target)
     {
         return instruction.Operand switch

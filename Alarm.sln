@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Alarm", "Alarm\Alarm.csproj", "{0492988E-97EC-4E45-9BBF-3C88BB28E7EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mod", "Mod\Mod.csproj", "{D8FAF194-9A4E-436E-8626-7A77C88C2DB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{D1D18EFA-B432-4CB9-9B30-B9293D0FFCF8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{0492988E-97EC-4E45-9BBF-3C88BB28E7EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0492988E-97EC-4E45-9BBF-3C88BB28E7EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0492988E-97EC-4E45-9BBF-3C88BB28E7EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8FAF194-9A4E-436E-8626-7A77C88C2DB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8FAF194-9A4E-436E-8626-7A77C88C2DB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8FAF194-9A4E-436E-8626-7A77C88C2DB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8FAF194-9A4E-436E-8626-7A77C88C2DB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1D18EFA-B432-4CB9-9B30-B9293D0FFCF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1D18EFA-B432-4CB9-9B30-B9293D0FFCF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1D18EFA-B432-4CB9-9B30-B9293D0FFCF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1D18EFA-B432-4CB9-9B30-B9293D0FFCF8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

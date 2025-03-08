@@ -14,18 +14,12 @@ public class OverwriteMethodTransformer(
         var replacement = new MethodBody(
             new MethodDefinition(TargetMethod.Name, TargetMethod.Attributes, TargetMethod.ReturnType)
         );
-
+        
         foreach (var i in SourceMethod.Body.Instructions)
-        {
             replacement.Instructions.Add(i.UpdateReference(TargetMethod));
-        }
 
         foreach (var v in SourceMethod.Body.Variables)
-        {
-            replacement.Variables.Add(
-                new VariableDefinition(Target.Module.ImportReference(v.VariableType))
-            );
-        }
+            replacement.Variables.Add(v.UpdateReference(TargetMethod));
         
         TargetMethod.Body = replacement;
     }

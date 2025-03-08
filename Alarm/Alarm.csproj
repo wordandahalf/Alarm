@@ -14,30 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Mod\alarm_mod.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Include="alarm_mod.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Assembly-CSharp">
-        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\WakeyWakey\Wakey Wakey_Data\Managed\Assembly-CSharp.dll</HintPath>
-        <Private>False</Private>
-      </Reference>
-      <Reference Include="Unity.RenderPipelines.Universal.Runtime">
-        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\WakeyWakey\Wakey Wakey_Data\Managed\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
-        <Private>False</Private>
-      </Reference>
-      <Reference Include="Unity.TextMeshPro">
-        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\WakeyWakey\Wakey Wakey_Data\Managed\Unity.TextMeshPro.dll</HintPath>
-        <Private>False</Private>
-      </Reference>
-      <Reference Include="UnityEngine.CoreModule">
-        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\WakeyWakey\Wakey Wakey_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
-        <Private>False</Private>
-      </Reference>
+      <ProjectReference Include="..\API\API.csproj" />
+      <ProjectReference Include="..\Mod\Mod.csproj" />
     </ItemGroup>
 
 </Project>
