@@ -1,6 +1,7 @@
 ﻿using Alarm.Weaving.Transformers;
 using Alarm.Weaving.Transformers.Injection;
 using Alarm.Weaving.Transformers.Reference;
+using Alarm.Weaving.Utils;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -46,7 +47,6 @@ public class Inject(Inject.Location at, string? name = null, int priority = -1) 
         var sourceMethod = (MethodDefinition) decorated;
         var targetMethod = target.Definition.Methods.First(x => x.Name == decorated.Name);
         
-        Console.WriteLine($"Adding Inject to {target.Definition.FullName} for {targetMethod.FullName}");
         target.AddTransformers(new InjectMethodTransformer(Priority, sourceMethod, targetMethod, At));
     }
 }
@@ -62,7 +62,6 @@ public class Overwrite(int priority = -1) : TransformerAttribute(priority)
         var sourceMethod = (MethodDefinition) decorated;
         var targetMethod = target.Definition.Methods.First(x => x.Name == decorated.Name);
         
-        Console.WriteLine($"Adding Overwrite to {target.Definition.FullName} for {targetMethod.FullName}");
         target.AddTransformers(new OverwriteMethodTransformer(Priority, sourceMethod, targetMethod));
     }
 }
@@ -89,9 +88,6 @@ public class Shadow : TransformerAttribute
             _ => throw new NotImplementedException()
         };
         
-        Console.WriteLine(
-            $"Adding Shadow to {source.Definition.FullName}, mapping {transformer.OldReference.FullName} to {transformer.NewReference.FullName}"
-        );
         source.AddTransformers(transformer);
     }
 }

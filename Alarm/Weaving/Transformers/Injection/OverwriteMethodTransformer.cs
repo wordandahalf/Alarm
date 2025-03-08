@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Alarm.Weaving.Utils;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -10,30 +11,13 @@ public class OverwriteMethodTransformer(
 {
     public override void Apply()
     {
-        Console.WriteLine($"Overwriting target {TargetMethod.FullName} with {SourceMethod.FullName}");
-        
         var replacement = new MethodBody(
             new MethodDefinition(TargetMethod.Name, TargetMethod.Attributes, TargetMethod.ReturnType)
         );
 
-        var processor = SourceMethod.Body.GetILProcessor();
-
-        Console.WriteLine($"Target module: {TargetMethod.Module.FileName}");
         foreach (var i in SourceMethod.Body.Instructions)
         {
-            // todo: common method
-            replacement.Instructions.Add(
-                i.Operand switch
-                {
-                    MethodReference methodReference => 
-                        processor.Create(i.OpCode, TargetMethod.Module.ImportReference(methodReference)),
-                    TypeReference typeReference =>
-                        processor.Create(i.OpCode, TargetMethod.Module.ImportReference(typeReference)),
-                    FieldReference fieldReference =>
-                        processor.Create(i.OpCode, TargetMethod.Module.ImportReference(fieldReference)),
-                    _ => i
-                }
-            );
+            replacement.Instructions.Add(i.UpdateReference(TargetMethod));
         }
 
         foreach (var v in SourceMethod.Body.Variables)

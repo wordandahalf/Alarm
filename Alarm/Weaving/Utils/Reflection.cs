@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Mono.Cecil;
 
-namespace Alarm.Weaving;
+namespace Alarm.Weaving.Utils;
 
 public static class Reflection
 {

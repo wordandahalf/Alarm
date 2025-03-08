@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using Alarm.Weaving.Utils;
+using Mono.Cecil;
 
 namespace Alarm.Weaving.Transformers.Reference;
 
@@ -11,28 +12,21 @@ public class MethodReferenceTransformer(
     
     public override void Apply()
     {
-        Console.WriteLine($"Transforming source reference {OldReference.FullName} to {NewReference.FullName}");
-
-        foreach (var method in Target.Methods.Where(it => it.HasCustomAttribute(typeof(TransformerAttribute))))
-        {
-            Apply(method);
-        }
+        var decoratedMethods =
+            Target.Methods.Where(it => it.HasCustomAttribute(typeof(TransformerAttribute)));
+        
+        foreach (var method in decoratedMethods) { Apply(method); }
     }
 
 
     private void Apply(MethodDefinition method)
     {
         var processor = method.Body.GetILProcessor();
-
         foreach (var i in method.Body.Instructions.ToList())
         {
-            if (i.Operand is MethodReference reference)
-            {
-                if (!reference.EqualsReference(OldReference)) continue;
-                var replacement = processor.Create(i.OpCode, NewReference); 
-                Console.WriteLine($"Transforming reference in instruction {i}: {replacement}");
-                
-                processor.Replace(i, replacement);
+            if (i.Operand is MethodReference reference && reference.EqualsReference(OldReference))
+            {   
+                processor.Replace(i, processor.Create(i.OpCode, NewReference));
             }
         }
     }

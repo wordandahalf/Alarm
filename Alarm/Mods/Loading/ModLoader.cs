@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using Alarm.Weaving;
+using Alarm.Weaving.Utils;
 using Mono.Cecil;
 
 namespace Alarm.Mods.Loading;
@@ -48,23 +49,20 @@ internal class ModLoader
 
         File.Copy(backupFile.FullName, gameFile.FullName, true);
         Assemblies.LoadGameAssembly(gameFile.FullName);
-        Hook();
-        Assemblies.SaveGameAssembly();
-    }
-
-    private void Hook()
-    {
-        foreach (var mod in _loadedMods)
+        
+        foreach (var (config, _, assembly) in _loadedMods)
         {
-            var module = mod.Assembly;
-            foreach (var weave in mod.Config.Weaves)
+            foreach (var weave in config.Weaves)
             {
-                // todo: error checking
-                Weaves.Load(module.GetType(weave)!);
+                Weaves.Load(
+                    assembly.GetType(weave)
+                    ?? throw new MissingWeaveException(assembly, weave)
+                );
             }
         }
 
         Weaves.Apply();
+        Assemblies.SaveGameAssembly();
     }
 
     private static LoadedMod LoadFile(FileInfo modFile)

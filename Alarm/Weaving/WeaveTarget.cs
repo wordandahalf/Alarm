@@ -5,8 +5,7 @@ namespace Alarm.Weaving;
 
 public record WeaveTarget(AssemblyDefinition Assembly, TypeDefinition Definition)
 {
-    // todo: priority of transformer
-    public readonly List<WeaveTransformer> Transformers = new();
+    public readonly List<WeaveTransformer> Transformers = [];
     
     public void AddTransformers(params WeaveTransformer[] transformers)
     {

@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Alarm.Mods;
 using Alarm.Weaving.Transformers;
+using Alarm.Weaving.Utils;
 using Mono.Cecil;
 
 namespace Alarm.Weaving;
@@ -9,7 +10,7 @@ public static class Weaves
 {
     private static readonly string WeaveTypeName = typeof(Weave).FullName!;
     
-    private static readonly IDictionary<string, WeaveTarget> LoadedWeaves = new Dictionary<string, WeaveTarget>();
+    private static readonly Dictionary<string, WeaveTarget> LoadedWeaves = new();
     
     /// <summary>
     /// Parses the Weave attributes attached to the provided type, returning an assembled target.
@@ -17,11 +18,16 @@ public static class Weaves
     /// </summary>
     public static void Load(Type weave)
     {
-        Console.WriteLine($"Loading weave '{weave.FullName}'");
-        
-        // todo: error checking
-        var source = GetOrCreateTarget(weave.FullName!, Assemblies.Load(weave.Assembly.Location))!;
-        var target = GetOrCreateTarget(((Weave) weave.GetCustomAttribute(typeof(Weave))!).Type)!;
+        var source =
+            GetOrCreateTarget(
+                weave.FullName ?? throw new BadWeaveException(weave), 
+            Assemblies.Load(weave.Assembly.Location)
+            ) ?? throw new BadWeaveException(weave);
+
+        var weaveTarget =
+            weave.GetCustomAttribute<Weave>()?.Type ?? throw new MissingWeaveAttributeException(weave); 
+        var target =
+            GetOrCreateTarget(weaveTarget) ?? throw new BadWeaveTargetException(weave, weaveTarget);
         
         foreach (var method in weave.GetRuntimeMethods())
         {
@@ -34,19 +40,17 @@ public static class Weaves
         }
     }
 
-    // todo: error handling
     private static void HandleMethod(WeaveTarget source, WeaveTarget target, MethodInfo info)
     {
-        foreach (TransformerAttribute attr in info.GetCustomAttributes(typeof(TransformerAttribute)))
+        foreach (var attr in info.GetCustomAttributes<TransformerAttribute>())
         {
             attr.AddTransformers(source, target, source.Definition.GetMethod(info)!);
         }
     }
 
-    // todo: error handling
     private static void HandleField(WeaveTarget source, WeaveTarget target, FieldInfo info)
     {
-        foreach (TransformerAttribute attr in info.GetCustomAttributes(typeof(TransformerAttribute)))
+        foreach (var attr in info.GetCustomAttributes<TransformerAttribute>())
         {
             attr.AddTransformers(source, target, source.Definition.GetField(info)!);
         }
@@ -71,16 +75,12 @@ public static class Weaves
     
     private static WeaveTarget? GetOrCreateTarget(string typeName, AssemblyDefinition assembly)
     {
-        if (LoadedWeaves.ContainsKey(typeName))
-        {
-            return LoadedWeaves[typeName];
-        }
-        else
-        {
-            var target = new WeaveTarget(assembly, assembly.MainModule.GetType(typeName));
-            LoadedWeaves[typeName] = target;
+        if (LoadedWeaves.TryGetValue(typeName, out var weaveTarget))
+            return weaveTarget;
 
-            return target;
-        }
+        var target = new WeaveTarget(assembly, assembly.MainModule.GetType(typeName));
+        LoadedWeaves[typeName] = target;
+
+        return target;
     }
 }
