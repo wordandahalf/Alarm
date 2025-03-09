@@ -113,4 +113,15 @@ public static class Bytecode
             _ => Instruction.Create(OpCodes.Stloc_S, method.Body.Variables[finalOffset]),
         };
     }
+    
+    public static Instruction UpdateBranchTargets(this Instruction instruction,
+        Dictionary<Instruction, Instruction> newTargets)
+    {
+        var operandType = instruction.OpCode.OperandType;   
+        if (operandType != OperandType.InlineBrTarget && operandType != OperandType.ShortInlineBrTarget)
+            return instruction;
+        
+        return !newTargets.TryGetValue((Instruction)instruction.Operand, out var newTarget) ?
+            instruction : Instruction.Create(instruction.OpCode, newTarget);
+    }
 }
