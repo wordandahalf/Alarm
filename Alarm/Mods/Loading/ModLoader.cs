@@ -1,7 +1,11 @@
 using System.Text.Json;
+using Alarm.Mods.Registry;
 using Alarm.Weaving;
 using Alarm.Weaving.Utils;
-using API.Mod;
+using API.Mod.Content;
+using API.Mod.Content.Wardrobe;
+using API.Mod.Registry;
+using Microsoft.Extensions.Logging;
 
 namespace Alarm.Mods.Loading;
 
@@ -14,6 +18,8 @@ internal class ModLoader
     private const string ModConfigName = "alarm_mod.json";
     private const string GameAssembly = "/Managed/Assembly-CSharp.dll";
     private readonly FileInfo _originalGameAssembly = new("./Assembly-CSharp.dll");
+    
+    private readonly ILoggerFactory _factory = LoggerFactory.Create(builder => builder.AddConsole());
     
     private readonly List<LoadedMod> _loadedMods = []; 
     
@@ -36,7 +42,7 @@ internal class ModLoader
             );
     }
     
-    public void Initialize(DirectoryInfo gameDirectory)
+    public void ModifyGame(DirectoryInfo gameDirectory)
     {
         AppDomain.CurrentDomain.AssemblyResolve += Assemblies.Resolve;
         
@@ -66,7 +72,18 @@ internal class ModLoader
         Assemblies.SaveGameAssembly();
     }
 
-    private static LoadedMod LoadFile(FileInfo modFile)
+    public void LoadMods()
+    {
+        var registries = new DictionaryRegistryAccess();
+        registries.Set(Registries.Costumes, new DictionaryMutableRegistry<Costume>());
+        
+        foreach (var loadedMod in _loadedMods)
+        {
+            loadedMod.Implementation.OnLoad(registries);
+        }
+    }
+
+    private LoadedMod LoadFile(FileInfo modFile)
     {
         var mod =
             modFile.FullName == Assemblies.GetExecutingAssembly().Location ?
@@ -80,7 +97,8 @@ internal class ModLoader
                                   ?? throw new IllegalConfigurationException(modFile);
 
         var entrypoint = mod.GetType(config.Entrypoint) ?? throw new MissingEntrypointException(modFile, config.Entrypoint);
-        var modInstance = Activator.CreateInstance(entrypoint) as IMod ?? throw new BadEntrypointException(modFile);
+        var modInstance = Activator.CreateInstance(entrypoint) as API.Mod.AlarmMod ?? throw new BadEntrypointException(modFile);
+        modInstance.Initialize(_factory.CreateLogger(config.Name));
         
         return new LoadedMod(config, modInstance, mod);
     }
