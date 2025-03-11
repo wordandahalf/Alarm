@@ -102,10 +102,8 @@ public static class Weaves
             .ThenBy(it => it.Priority ?? int.MaxValue)
             .ToList();
         
-        Console.WriteLine($"Applying {ordered.Count} transformers: ");
         foreach (var transformer in ordered)
         {
-            Console.WriteLine($"{transformer.GetType().Name} -> {transformer.Target.FullName}");
             transformer.Apply();
         }
     }
