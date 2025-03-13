@@ -44,8 +44,8 @@ public static class Bytecode
             Code.Ldloc_2 => 2,
             Code.Stloc_3 => 3,
             Code.Ldloc_3 => 3,
-            Code.Stloc_S => (byte)instruction.Operand,
-            Code.Ldloc_S => (byte)instruction.Operand,
+            Code.Stloc_S => (byte) ((VariableDefinition)instruction.Operand).Index,
+            Code.Ldloc_S => (byte) ((VariableDefinition)instruction.Operand).Index,
             _ => null
         };
     }
